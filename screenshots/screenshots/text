@@ -1,0 +1,67 @@
+CREATE OR REPLACE PACKAGE CTUAPP.activity_pkg IS
+   
+   PROCEDURE add_activity (p_activity_name varchar2);
+
+END;
+
+CREATE OR REPLACE PACKAGE BODY CTUAPP.activity_pkg
+IS
+ 
+   PROCEDURE add_activity (p_name varchar2)
+   IS
+   BEGIN
+        INSERT INTO ctuapp.activity (NAME) 
+        VALUES (p_name);
+   EXCEPTION
+        WHEN OTHERS
+        THEN         
+            RAISE;
+   END;
+   
+END;
+
+begin
+if :P3_NAME not null then
+ctuapp.activity_pkg.add_activity(
+p_activity_name => :P3_NAME
+);
+else
+RAISE_APPLICATION_ERROR(-20001,'Název aktivity musí být vyplněn.');
+end if;
+end;
+
+
+<div data-label="#TITLE#" id="SR_R#ID#"> 
+    <div class="carousel-vision">
+        <div class="carousel-vision-text">
+            <h3>
+               #NAME#
+            </h3> 
+            <h4>
+               #DESCRIPTION#
+            </h4> 
+        </div>
+        <div class="carousel-vision-icon">
+            <div class= "t-Icon fa fa-lg #ICON#"></div>
+        </div>
+    </div>
+</div>
+
+SELECT 
+CASE WHEN CONNECT_BY_ISLEAF = 1 THEN 0 WHEN LEVEL = 1 THEN 1 ELSE -1 END AS STATUS,
+ID AS VALUE, N AS TITLE, NULL AS ICON, NULL  AS LINK, LEVEL 
+FROM (
+SELECT VIS.ID_VISION AS ID, NULL AS PARENT, VIS.NAME N
+    FROM CTUAPP.VISION VIS
+    UNION ALL
+    SELECT MIL.ID_MILESTONE AS ID, MIL.ID_VISION PARENT, MIL.NAME N
+    FROM CTUAPP.MILESTONE MIL
+    UNION ALL
+    SELECT PHA.ID_PHASE AS ID, PHA.ID_MILESTONE PARENT, PHA.NAME N
+    FROM CTUAPP.PHASE PHA)
+START WITH PARENT IS NULL
+CONNECT BY PRIOR ID = PARENT;
+
+
+
+55 https://docs.oracle.com/en/database/oracle/application-express/19.2/buildapplications.html
